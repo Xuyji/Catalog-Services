@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: catalog-api
+  cassandra:
+    contact-points: ${CASSANDRA_CONTACT_POINTS:localhost:9042}
+    local-datacenter: ${CASSANDRA_LOCAL_DC:datacenter1}
+    keyspace-name: music_catalog
+    schema-action: none   # schema is owned by cassandra/catalog-schema.cql, not the app
+    request:
+      timeout: 500ms
+      consistency: local_quorum
+  cache:
+    cache-names: tracks,artists
+    caffeine:
+      spec: maximumSize=100000,expireAfterWrite=10m,recordStats
+
+server:
+  port: 8080
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,caches
+  endpoint:
+    health:
+      probes:
+        enabled: true

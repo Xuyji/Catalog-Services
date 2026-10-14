@@ -1,0 +1,23 @@
+plugins {
+    id 'application'
+    id 'com.gradleup.shadow'
+}
+
+dependencies {
+    implementation platform('io.dropwizard:dropwizard-bom:4.0.8')
+    implementation platform('io.dropwizard:dropwizard-dependencies:4.0.8')
+    implementation 'io.dropwizard:dropwizard-core'
+    implementation 'com.datastax.oss:java-driver-core:4.17.0'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    testImplementation 'io.dropwizard:dropwizard-testing'
+}
+
+application {
+    mainClass = 'com.musicdata.charts.ChartsApplication'
+}
+
+shadowJar {
+    archiveClassifier = 'all'
+    mergeServiceFiles()
+}

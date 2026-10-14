@@ -1,0 +1,3 @@
+rootProject.name = 'music-catalog-services'
+
+include 'charts-api', 'catalog-api', 'catalog-ingest-lambda'

@@ -1,0 +1,41 @@
+# AWS SAM template. Deploy with:  ./gradlew build && sam deploy --guided
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Validates and normalizes label catalog deliveries dropped into S3.
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Bucket that receives label deliveries under incoming/
+
+Resources:
+  CatalogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+
+  CatalogIngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.musicdata.ingest.CatalogFeedHandler::handleRequest
+      Runtime: java17
+      CodeUri: build/distributions/catalog-ingest-lambda.zip
+      MemorySize: 1024
+      Timeout: 120
+      SnapStart:
+        ApplyOn: PublishedVersions   # cuts Java cold starts
+      AutoPublishAlias: live
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref BucketName
+      Events:
+        Delivery:
+          Type: S3
+          Properties:
+            Bucket: !Ref CatalogBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: incoming/

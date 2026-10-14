@@ -1,0 +1,27 @@
+# Values can be overridden with environment variables, e.g. CASSANDRA_CONTACT_POINTS=cassandra:9042
+cassandra:
+  contactPoints: ${CASSANDRA_CONTACT_POINTS:-localhost:9042}
+  localDatacenter: ${CASSANDRA_LOCAL_DC:-datacenter1}
+  keyspace: ${CASSANDRA_KEYSPACE:-music_analytics}
+  requestTimeoutMs: 500
+
+trending:
+  windowMinutes: 10
+  processingLagMinutes: 1
+  cacheTtlSeconds: 15
+  maxEntries: 200
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8080
+  adminConnectors:
+    - type: http
+      port: 8081
+
+logging:
+  level: INFO
+  appenders:
+    - type: console
+      layout:
+        type: json

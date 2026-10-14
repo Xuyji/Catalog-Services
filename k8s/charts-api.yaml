@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: charts-api
+  labels: { app: charts-api }
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: charts-api }
+  strategy:
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+  template:
+    metadata:
+      labels: { app: charts-api }
+    spec:
+      # Spread pods across availability zones so losing one zone does not take the API down.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels: { app: charts-api }
+      containers:
+        - name: charts-api
+          image: ghcr.io/YOUR_GITHUB_USER/charts-api:1.0.0
+          ports:
+            - { name: http, containerPort: 8080 }
+            - { name: admin, containerPort: 8081 }
+          env:
+            - { name: CASSANDRA_CONTACT_POINTS, value: "cassandra.cassandra.svc:9042" }
+            - { name: CASSANDRA_LOCAL_DC, value: "datacenter1" }
+          readinessProbe:
+            httpGet: { path: /healthcheck, port: admin }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /ping, port: admin }
+            initialDelaySeconds: 30
+          resources:
+            requests: { cpu: 500m, memory: 512Mi }
+            limits: { memory: 1Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: charts-api
+spec:
+  selector: { app: charts-api }
+  ports:
+    - { name: http, port: 80, targetPort: http }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: charts-api
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: charts-api }
+  minReplicas: 3
+  maxReplicas: 30
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 65 }

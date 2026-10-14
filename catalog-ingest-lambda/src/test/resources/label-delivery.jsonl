@@ -1,0 +1,9 @@
+{"isrc":"US-RC1-76-07839","title":"  First Song ","artist_name":"The Examples","duration_ms":215000,"release_date":"2026-09-01","genres":["Pop"," Indie ","pop"],"explicit":false}
+{"isrc":"GBAYE0601498","title":"Second Song","artist_name":"Sample Band","duration_ms":187000,"release_date":"2026-08-15"}
+{"isrc":"BAD","title":"Bad ISRC","artist_name":"Nobody","duration_ms":1000,"release_date":"2026-01-01"}
+{"isrc":"JPAB01234567","title":"","artist_name":"No Title","duration_ms":1000,"release_date":"2026-01-01"}
+{"isrc":"KRAB01234567","title":"Zero Length","artist_name":"X","duration_ms":0,"release_date":"2026-01-01"}
+{"isrc":"FRAB01234567","title":"Bad Date","artist_name":"X","duration_ms":1000,"release_date":"01/02/2026"}
+{this is not json
+
+{"isrc":"GBAYE0601498","title":"Second Song (Remastered)","artist_name":"Sample Band","duration_ms":188000,"release_date":"2026-08-15","explicit":true}

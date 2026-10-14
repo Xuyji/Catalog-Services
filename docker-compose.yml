@@ -1,0 +1,38 @@
+# Build first:  ./gradlew build   then:  docker compose up -d --build
+# Expects the music-streaming-pipeline repo checked out next to this one (for the analytics schema).
+services:
+  cassandra:
+    image: cassandra:4.1
+    ports: ["9042:9042"]
+    environment:
+      MAX_HEAP_SIZE: 1G
+      HEAP_NEWSIZE: 256M
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces'"]
+      interval: 15s
+      retries: 20
+
+  cassandra-init:
+    image: cassandra:4.1
+    depends_on:
+      cassandra: { condition: service_healthy }
+    volumes:
+      - ./cassandra/catalog-schema.cql:/catalog.cql:ro
+      - ../music-streaming-pipeline/cassandra/schema.cql:/analytics.cql:ro
+    entrypoint: ["/bin/sh", "-c", "cqlsh cassandra -f /catalog.cql && cqlsh cassandra -f /analytics.cql"]
+
+  charts-api:
+    build: ./charts-api
+    depends_on:
+      cassandra-init: { condition: service_completed_successfully }
+    environment:
+      CASSANDRA_CONTACT_POINTS: cassandra:9042
+    ports: ["8080:8080", "8081:8081"]
+
+  catalog-api:
+    build: ./catalog-api
+    depends_on:
+      cassandra-init: { condition: service_completed_successfully }
+    environment:
+      CASSANDRA_CONTACT_POINTS: cassandra:9042
+    ports: ["8090:8080"]
